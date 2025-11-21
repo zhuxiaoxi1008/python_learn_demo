@@ -51,9 +51,9 @@ class AlienInvasion:
             self.ship.moving_down = True
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()    
-        elif event.key == pygame.K_q:
-            sys.exit()
         elif event.key == pygame.K_ESCAPE:
+            sys.exit()
+        elif event.key == pygame.K_q:
             sys.exit()
                
     def _check_keyup_events(self, event):
@@ -79,27 +79,63 @@ class AlienInvasion:
                 self.bullets.remove(bullet)
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
-        # print(len(self.bullets))
-    
+        self._check_bullet_alien_collisions()    
+    def _check_bullet_alien_collisions(self):
+        '''处理子弹和外星人的碰撞'''
+        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        if not self.aliens:
+            self.bullets.empty()
+            self._create_fleet()
+            
+        
+    def _create_alien(self, x, y):
+        alien = Alien(self)
+        alien.x = x
+        alien.y = y
+        alien.rect.x = alien.x
+        alien.rect.y = alien.y
+        self.aliens.add(alien)
     def _create_fleet(self):
         """创建一个外星舰队"""
         # 创建一个外星人，再不断添加，直到没有空间添加外星人为止
         # 外星人的间距为外星人的宽度
         alien = Alien(self)
-        alien_width = alien.rect.width
+        alien_width, alien_height = alien.rect.size
+        # print(alien.rect.size)
         current_x = alien_width
-        while current_x < (self.settings.screen_width - 2 * alien_width):
-            new_alien = Alien(self)
-            new_alien.x = current_x
-            new_alien.rect.x = current_x
-            self.aliens.add(new_alien)
-            current_x += 2 * alien_width        
+        current_y = alien_height
+        rows = 3
+        y_index = 0
+        while y_index < rows:
+            while current_x < (self.settings.screen_width - 2 * alien_width):
+                self._create_alien(current_x, current_y)
+                current_x += 2 * alien_width
+            current_x = alien_width  
+            current_y += alien_height + 30
+            y_index += 1
+    def _update_aliens(self):
+        """检查是否到达边缘，并更新外星人位置 """
+        self._check_fleet_edges()
+        self.aliens.update()
+    
+    def _check_fleet_edges(self):
+        for alien in self.aliens.sprites():
+            if (alien.check_edges()):
+                self._change_fleet_direction()
+                break
+    
+    def _change_fleet_direction(self):
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1            
+                   
     def _update_screen(self):
         """更新屏幕上的图像，并切换到新屏幕"""
         self.screen.fill(self.settings.bg_color)
         self.ship.update()
         self.ship.blitme()
         self._update_bullets()
+        self._update_aliens()
         self.aliens.draw(self.screen)
         pygame.display.flip()
 

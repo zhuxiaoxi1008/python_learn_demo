@@ -11,8 +11,13 @@ class Settings:
         self.ship_speed = float(1.5)  # 添加飞船移动速度参数
         
         # 子弹设置
-        self.bullet_speed = 2.0
+        self.bullet_speed = 5.0
         self.bullet_width = 3
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
         self.bullets_allowed = 50
+        
+        # 外星人设置
+        self.alien_speed = 1.0
+        self.fleet_drop_speed = 10
+        self.fleet_direction = 1 # 1: 向右移动，-1: 向左移动
